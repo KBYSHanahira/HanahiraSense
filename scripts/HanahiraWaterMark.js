@@ -18,12 +18,12 @@ function draw() {
 	var seconds = seconds1 <= 9 ? "0" + seconds1 : seconds1;
 	
 	var server_tickrate = Globals.Tickrate().toString()
-	var ebanaya_hueta = Math.round(Entity.GetProp(Entity.GetLocalPlayer(), "CPlayerResource", "m_iPing")).toString()
+	var ebanaya_hueta = Math.round(Entity.GetProp(Entity.GetLocalPlayer(), "CPlayerResource", "m_iPing")).toString() // кто это сделал - контуженный на всю голову ебаный хуесос
 
 	color = UI.GetColor("Misc", "JAVASCRIPT", "Script items", "Watermark");
 
 	var font = Render.AddFont("Verdana", 7, 400);
-	var text = "HanahiraSense V5  | " + "Beta Version" + " | Delay: " + ebanaya_hueta + "ms | " + server_tickrate + "tick | " + hours + minutes + seconds;
+	var text = "HanahiraSense | " + "Hanahira" + " | delay: " + ebanaya_hueta + "ms | " + server_tickrate + "tick | " + hours + minutes + seconds;
 	
 	var w = Render.TextSizeCustom(text, font)[0] + 8;
 	var x = Global.GetScreenSize()[0];

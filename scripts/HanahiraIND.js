@@ -1,88 +1,141 @@
-var height = Render.GetScreenSize()[1];
-var hitchance = ""
+// UI Widgets //
+UI.AddLabel("=======INDICATORS V2=======");
+UI.AddSliderInt("Circle Radius", 10, 50);
+UI.AddSliderInt("Arc Length", 0, 90);
+UI.AddSliderInt("Arc Thickness", 0, 20);
+UI.AddSliderInt("Arc Precision (Use less for more fps)", 20, 500);
+UI.AddCheckbox("Reset Indicator Colors");
+UI.AddColorPicker("Circle Color");
+UI.AddColorPicker("Real Color");
+UI.AddColorPicker("Fake Color");
+UI.AddLabel("========================");
 
-UI.AddCheckbox("DT Indicator");
-UI.AddCheckbox("FD Indicator");
-UI.AddCheckbox("BAIM Indicator");
-UI.AddCheckbox("Damage Log");
+// Default values //
+UI.SetValue("Misc", "JAVASCRIPT", "Script items", "Circle Radius", 30);
+UI.SetValue("Misc", "JAVASCRIPT", "Script items", "Arc Length", 45);
+UI.SetValue("Misc", "JAVASCRIPT", "Script items", "Arc Thickness", 5);
+UI.SetValue("Misc", "JAVASCRIPT", "Script items", "Arc Precision (Use less for more fps)", 280);
+UI.SetColor("Misc", "JAVASCRIPT", "Script items", "Circle Color", [120, 120, 120, 192]);
+UI.SetColor("Misc", "JAVASCRIPT", "Script items", "Real Color", [255, 0, 196, 255]);
+UI.SetColor("Misc", "JAVASCRIPT", "Script items", "Fake Color", [170, 128, 255, 255]);
 
-function render() {
-    font = Render.AddFont("Verdana", 18, 700);
+// Settings //
+var circle_radius       = UI.GetValue("Misc", "JAVASCRIPT", "Script items", "Circle Radius");
+var arc_length          = UI.GetValue("Misc", "JAVASCRIPT", "Script items", "Arc Length");
+var arc_thickness       = UI.GetValue("Misc", "JAVASCRIPT", "Script items", "Arc Thickness");
+var arc_precision       = UI.GetValue("Misc", "JAVASCRIPT", "Script items", "Arc Precision (Use less for more fps)");
+var circle_color        = UI.GetColor("Misc", "JAVASCRIPT", "Script items", "Circle Color");
+var real_color          = UI.GetColor("Misc", "JAVASCRIPT", "Script items", "Real Color");
+var fake_color          = UI.GetColor("Misc", "JAVASCRIPT", "Script items", "Fake Color");
 
-    //Bodyaim Indicator
 
-    if (UI.GetValue("Misc", "JAVASCRIPT", "Script items", "BAIM Indicator")) {
+function update_settings()
+{
+    circle_radius       = UI.GetValue("Misc", "JAVASCRIPT", "Script items", "Circle Radius");
+    arc_length          = UI.GetValue("Misc", "JAVASCRIPT", "Script items", "Arc Length");
+    arc_thickness       = UI.GetValue("Misc", "JAVASCRIPT", "Script items", "Arc Thickness");
+    arc_precision       = UI.GetValue("Misc", "JAVASCRIPT", "Script items", "Arc Precision (Use less for more fps)");
+    circle_color        = UI.GetColor("Misc", "JAVASCRIPT", "Script items", "Circle Color");
+    real_color          = UI.GetColor("Misc", "JAVASCRIPT", "Script items", "Real Color");
+    fake_color          = UI.GetColor("Misc", "JAVASCRIPT", "Script items", "Fake Color");
 
-        if (UI.IsHotkeyActive("Rage", "General", "Force body aim")) {
-            Render.StringCustom(3, height - 440, 0, "BODY", [0, 0, 0, 255], font);
-            Render.StringCustom(4, height - 440, 0, "BODY", [163, 240, 41, 255], font);
-        } else {
-            Render.StringCustom(3, height - 440, 0, "BODY", [0, 0, 0, 255], font);
-            Render.StringCustom(4, height - 440, 0, "BODY", [242, 29, 29, 255], font);
-        }
+
+    if(arc_thickness > circle_radius)
+        UI.SetValue("Misc", "JAVASCRIPT", "Script items", "Arc Thickness", circle_radius);
+
+    if(UI.GetValue("Misc", "JAVASCRIPT", "Script items", "Reset Indicator Colors"))
+    {
+        UI.SetColor("Misc", "JAVASCRIPT", "Script items", "Circle Color", [255, 0, 0, 190]);
+        UI.SetColor("Misc", "JAVASCRIPT", "Script items", "Real Color", [255, 0, 196, 255]);
+        UI.SetColor("Misc", "JAVASCRIPT", "Script items", "Fake Color", [170, 128, 255, 255]);
+        UI.SetValue("Misc", "JAVASCRIPT", "Script items", "Reset Indicator Colors", false)
     }
+   
+}
 
-    //Doubletap Indicator
+function draw_circle(x, y, radius, thickness, color)
+{
+    var inner = radius - thickness;
 
-    if (UI.GetValue("Misc", "JAVASCRIPT", "Script items", "DT Indicator")) {
-        if (UI.IsHotkeyActive("Rage", "GENERAL", "Exploits", "Doubletap")) {
-            Render.StringCustom(3, height - 500, 0, "DT", [0, 0, 0, 255], font);
-            Render.StringCustom(4, height - 500, 0, "DT", [163, 240, 41, 255], font);
-        } else {
-            Render.StringCustom(3, height - 500, 0, "DT", [0, 0, 0, 255], font);
-            Render.StringCustom(4, height - 500, 0, "DT", [242, 29, 29, 255], font);
-        }
+    for(; radius > inner; --radius)
+    {
+        Render.Circle(x, y, radius, color);
     }
+}
 
-    //Fakeduck Indicator
+function draw_arc(x, y, radius, start_angle, percent, thickness, color)
+{
+    var precision   = (2 * Math.PI) / arc_precision;
+    var step        = Math.PI / 180;
+    var inner       = radius - thickness;
+    var end_angle   = (start_angle + percent) * step;
+    var start_angle = (start_angle * Math.PI) / 180;
 
-    if (UI.GetValue("Misc", "JAVASCRIPT", "Script items", "FD Indicator")) {
-        if (UI.IsHotkeyActive("Anti-Aim", "Extra", "Fake duck")) {
-            Render.StringCustom(3, height - 470, 0, "FD", [0, 0, 0, 255], font);
-            Render.StringCustom(4, height - 470, 0, "FD", [163, 240, 41, 255], font);
-        } else {
-            Render.StringCustom(3, height - 470, 0, "FD", [0, 0, 0, 255], font);
-            Render.StringCustom(4, height - 470, 0, "FD", [242, 29, 29, 255], font);
+    for(; radius > inner; --radius)
+    {
+        for(var angle = start_angle; angle < end_angle; angle += precision)
+        {
+            var cx = Math.round(x + radius * Math.cos(angle));
+            var cy = Math.round(y + radius * Math.sin(angle));
+
+            var cx2 = Math.round(x + radius * Math.cos(angle + precision));
+            var cy2 = Math.round(y + radius * Math.sin(angle + precision));
+
+            Render.Line(cx, cy, cx2, cy2, color);
         }
     }
 }
-Cheat.RegisterCallback("Draw", "render")
 
-hitboxes = [
-    ' with a nade',
-    ' in the head',
-    ' in the chest',
-    ' in the stomach',
-    ' in the left arm',
-    ' in the right arm',
-    ' in the left leg',
-    ' in the right leg',
-    ' in the body'
-];
-
-function getHitboxName(index) {
-    return hitboxes[index] || 'Generic';
-}
-
-function hitlog() {
-
-    if (UI.GetValue("Misc", "JAVASCRIPT", "Script items", "Damage Log")) {
-
-        localPlayer = Entity.GetLocalPlayer();
-        attacker = Entity.GetEntityFromUserID(Event.GetInt('attacker'));
-        victim = Entity.GetName(Entity.GetEntityFromUserID(Event.GetInt('userid')));
-
-        hitgroup = getHitboxName(Event.GetInt('hitgroup'));
-        damage = Event.GetInt("dmg_health");
-
-        if (localPlayer == attacker) {
-            Global.PrintChat(" \x04[Raphael] \x01hurt \x04 " + victim + " \x01for " + damage + hitgroup + (hitgroup == " with a nade" ? "" : "\n (Hitchance: " + hitchance + ")"));
-        }
+function adjust_angle(angle)
+{
+    if(angle < 0)
+    {
+        angle = (90 + angle * (-1));
     }
-}
-Global.RegisterCallback("player_hurt", "hitlog");
+    else if(angle > 0)
+    {
+        angle = (90 - angle);
+    }
 
-function updateHitchance() {
-    hitchance = Event.GetInt("hitchance");
+    return angle;
 }
-Cheat.RegisterCallback("ragebot_fire", "updateHitchance")
+
+function main()
+{
+    var local_player = Entity.GetLocalPlayer();
+
+    if(!Entity.IsAlive(local_player))
+        return;
+
+    update_settings();
+
+    var screen_size     = Render.GetScreenSize();
+    var screen_middle_x = screen_size[0] * 0.5;
+    var screen_middle_y = screen_size[1] * 0.5;
+
+    var view_angles = Local.GetViewAngles();
+
+    var real_yaw = Local.GetRealYaw();
+    var fake_yaw = Local.GetFakeYaw();
+    var view_yaw = view_angles[1] - 180;
+ 
+    var real = adjust_angle(real_yaw - view_yaw);
+    var fake = adjust_angle(fake_yaw - view_yaw);
+
+    draw_circle(screen_middle_x, screen_middle_y, circle_radius, arc_thickness, circle_color);
+    draw_arc(screen_middle_x, screen_middle_y, circle_radius, fake - (arc_length * 0.5), arc_length, arc_thickness, fake_color);
+    draw_arc(screen_middle_x, screen_middle_y, circle_radius, real - (arc_length * 0.5), arc_length, arc_thickness, real_color);
+
+    var double_tap_color = UI.IsHotkeyActive( "Rage", "GENERAL", "Exploits", "Doubletap" ) ? real_color : circle_color;
+    var hide_shots_color = UI.IsHotkeyActive( "Rage", "GENERAL", "Exploits", "Hide shots" ) ? real_color : circle_color;
+    var safe_point_color = UI.IsHotkeyActive( "Rage", "GENERAL", "General", "Force safe point" ) ? real_color : circle_color;
+
+    var text_offset = screen_middle_y + circle_radius;
+    var text_spacing = screen_size[1] * 0.0185185185;
+
+    Render.String(screen_middle_x, text_offset + text_spacing, 1, "ON-SHOT", hide_shots_color);
+    Render.String(screen_middle_x, text_offset + (text_spacing * 2), 1, "FAST TAP", double_tap_color);
+    Render.String(screen_middle_x, text_offset + (text_spacing * 3), 1, "SAFE POINT", safe_point_color);
+}
+
+Cheat.RegisterCallback("Draw", "main");
